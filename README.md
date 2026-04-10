@@ -41,7 +41,7 @@ KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
 Aby zainicjować proces detekcji, należy wykonać skrypt:
 
 ```
-python voice_detection.py
+python keyword_detection.py
 ```
 
 ## 🧠 Architektura rozwiązania
