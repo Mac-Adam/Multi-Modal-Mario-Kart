@@ -1,10 +1,20 @@
 import cv2
 import socket
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import numpy as np
 from steering_logic import process_frame
+from connection_settings import load_config
 
 # --- KONFIGURACJA ---
-UDP_IP, UDP_PORT = "127.0.0.1", 8001
+config = load_config()
+UDP_IP = config.get("udp_ip", config.get("host", "127.0.0.1"))
+UDP_PORT = config.get("udp_port", 8001)
 LOWER_COLOR = np.array([50, 80, 50])   # Przykładowe dla błękitu
 UPPER_COLOR = np.array([255, 125, 115])
 MIN_AREA = 400

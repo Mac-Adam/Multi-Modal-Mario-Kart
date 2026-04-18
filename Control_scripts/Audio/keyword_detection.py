@@ -1,10 +1,17 @@
 import socket
-import json
 import threading
 import queue
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import numpy as np
 import sounddevice as sd
 from faster_whisper import WhisperModel
+from connection_settings import load_config
 
 # =========================
 # Konfiguracja Audio & Socket
@@ -21,19 +28,6 @@ audio_queue = queue.Queue()
 
 # Lista słów, które wyzwalają wysyłkę do serwera:
 KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
-
-# =========================
-# Ładowanie Konfiguracji
-# =========================
-def load_config(file_path="connection_settings.json"):
-    try:
-        with open(file_path, "r") as f:
-            config = json.load(f)
-            print(f"[KD] Załadowano konfigurację z {file_path}, host: {config.get('host')}, port: {config.get('port')}")
-            return config
-    except FileNotFoundError:
-        print(f"[KD] Nie znaleziono pliku konfiguracyjnego {file_path}. Używam domyślnych ustawień. (host: 127.0.0.1, port: 65432)")
-        return {"host": "127.0.0.1", "port": 65432}
 
 # =========================
 # Funkcje Sieciowe
@@ -91,12 +85,11 @@ def transcriber(sock):
                         send_word(sock, keyword)
 
 def main():
-    # 1. Pobranie konfiguracji:
     config = load_config()
-    host = config.get("host")
-    port = config.get("port")
+    host = config.get("host", "127.0.0.1")
+    port = config.get("port", 65432)
 
-    # 2. Nawiązanie połączenia i uruchomienie pętli:
+    # 1. Nawiązanie połączenia i uruchomienie pętli:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
