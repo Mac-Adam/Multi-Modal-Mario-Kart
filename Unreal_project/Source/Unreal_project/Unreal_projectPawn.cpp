@@ -130,19 +130,22 @@ void AUnreal_projectPawn::EndPlay(EEndPlayReason::Type EndPlayReason)
 }
 void AUnreal_projectPawn::Tick(float Delta)
 {
-	Super::Tick(Delta);
+    Super::Tick(Delta);
 
-	// add some angular damping if the vehicle is in midair
-	bool bMovingOnGround = ChaosVehicleMovement->IsMovingOnGround();
-	GetMesh()->SetAngularDamping(bMovingOnGround ? 0.0f : 3.0f);
+    // add some angular damping if the vehicle is in midair
+    bool bMovingOnGround = ChaosVehicleMovement->IsMovingOnGround();
+    GetMesh()->SetAngularDamping(bMovingOnGround ? 0.0f : 3.0f);
 
-	// realign the camera yaw to face front
-	float CameraYaw = BackSpringArm->GetRelativeRotation().Yaw;
-	CameraYaw = FMath::FInterpTo(CameraYaw, 0.0f, Delta, 1.0f);
+    // realign the camera yaw to face front
+    float CameraYaw = BackSpringArm->GetRelativeRotation().Yaw;
+    CameraYaw = FMath::FInterpTo(CameraYaw, 0.0f, Delta, 1.0f);
 
-	BackSpringArm->SetRelativeRotation(FRotator(0.0f, CameraYaw, 0.0f));
+    BackSpringArm->SetRelativeRotation(FRotator(0.0f, CameraYaw, 0.0f));
 
-	if (ListenSocket)
+    // 1. Increment our safety timer every frame
+    TimeSinceLastNetworkInput += Delta;
+
+    if (ListenSocket)
     {
         uint32 Size;
         // While there is data waiting to be read...
@@ -160,7 +163,9 @@ void AUnreal_projectPawn::Tick(float Delta)
                 ReceivedData.Add(0); // Null terminator
                 FString ReceivedString = UTF8_TO_TCHAR(ReceivedData.GetData());
                 
-                UE_LOG(LogTemp, Warning, TEXT("Polled: %s"), *ReceivedString);
+                // 2. We successfully received data! Reset the safety timer.
+                TimeSinceLastNetworkInput = 0.0f;
+                bIsNetworkTimeout = false; 
 
                 FString Command;
                 FString ValueString;
@@ -173,7 +178,7 @@ void AUnreal_projectPawn::Tick(float Delta)
                     {
                         DoSteering(InputValue);
                     }
-					else if (Command == TEXT("THROTTLE"))
+                    else if (Command == TEXT("THROTTLE"))
                     {
                         if (InputValue > 0.0f)
                         {
@@ -201,8 +206,22 @@ void AUnreal_projectPawn::Tick(float Delta)
             }
         }
     }
-}
 
+    // 3. The Dead Man's Switch (Timeout Logic)
+    // If we haven't received data in 1 second, zero out all inputs.
+    if (TimeSinceLastNetworkInput > 1.0f && !bIsNetworkTimeout)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Network connection dropped! Engaging safety brakes."));
+        
+        DoSteering(0.0f);
+        DoThrottle(0.0f);
+        DoBrake(0.0f);
+        DoHandbrakeStop();
+
+        // Set this to true so we don't spam the console and functions every single frame
+        bIsNetworkTimeout = true; 
+    }
+}
 void AUnreal_projectPawn::Steering(const FInputActionValue& Value)
 {
 	// route the input
@@ -265,12 +284,14 @@ void AUnreal_projectPawn::ResetVehicle(const FInputActionValue& Value)
 
 void AUnreal_projectPawn::DoSteering(float SteeringValue)
 {
+	if (!bCanDrive) return;
 	// add the input
 	ChaosVehicleMovement->SetSteeringInput(SteeringValue);
 }
 
 void AUnreal_projectPawn::DoThrottle(float ThrottleValue)
 {
+	if (!bCanDrive) return;
 	// add the input
 	ChaosVehicleMovement->SetThrottleInput(ThrottleValue);
 
@@ -280,6 +301,7 @@ void AUnreal_projectPawn::DoThrottle(float ThrottleValue)
 
 void AUnreal_projectPawn::DoBrake(float BrakeValue)
 {
+	if (!bCanDrive) return;
 	// add the input
 	ChaosVehicleMovement->SetBrakeInput(BrakeValue);
 
@@ -289,12 +311,14 @@ void AUnreal_projectPawn::DoBrake(float BrakeValue)
 
 void AUnreal_projectPawn::DoBrakeStart()
 {
+	if (!bCanDrive) return;
 	// call the Blueprint hook for the brake lights
 	BrakeLights(true);
 }
 
 void AUnreal_projectPawn::DoBrakeStop()
 {
+	if (!bCanDrive) return;
 	// call the Blueprint hook for the brake lights
 	BrakeLights(false);
 
@@ -304,6 +328,7 @@ void AUnreal_projectPawn::DoBrakeStop()
 
 void AUnreal_projectPawn::DoHandbrakeStart()
 {
+	if (!bCanDrive) return;
 	// add the input
 	ChaosVehicleMovement->SetHandbrakeInput(true);
 
@@ -313,6 +338,7 @@ void AUnreal_projectPawn::DoHandbrakeStart()
 
 void AUnreal_projectPawn::DoHandbrakeStop()
 {
+	if (!bCanDrive) return;
 	// add the input
 	ChaosVehicleMovement->SetHandbrakeInput(false);
 
@@ -322,12 +348,14 @@ void AUnreal_projectPawn::DoHandbrakeStop()
 
 void AUnreal_projectPawn::DoLookAround(float YawDelta)
 {
+	if (!bCanDrive) return;
 	// rotate the spring arm
 	BackSpringArm->AddLocalRotation(FRotator(0.0f, YawDelta, 0.0f));
 }
 
 void AUnreal_projectPawn::DoToggleCamera()
 {
+	if (!bCanDrive) return;
 	// toggle the active camera flag
 	bFrontCameraActive = !bFrontCameraActive;
 
