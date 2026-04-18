@@ -1,10 +1,20 @@
 import socket
 import time
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from connection_settings import load_config
+
 import keyboard
 
 # Match your Unreal Engine settings
-UDP_IP = "127.0.0.1"
-UDP_PORT = 8001
+config = load_config()
+UDP_IP = config.get("udp_ip", config.get("host", "127.0.0.1"))
+UDP_PORT = config.get("udp_port", 8001)
 
 print(f"Connecting to Unreal Engine on {UDP_IP}:{UDP_PORT}...")
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

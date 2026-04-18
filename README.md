@@ -1,60 +1,74 @@
-# Real-Time Keyword Detection System
+# Multi Modal Mario Kart
 
-Profesjonalne narzędzie do analizy strumienia audio w czasie rzeczywistym, wykorzystujące model **Whisper** do detekcji słów kluczowych i komunikację poprzez protokół **TCP/IP (Sockets)**.
+Projekt realizowany w ramach przedmiotu Interfejsy człowiek komputer na 1 roku studiów magisterskich Automatyka i 
+Robotyka.
 
----
+### Cel
 
-## 📝 Opis projektu
-System umożliwia ciągłe monitorowanie sygnału z mikrofonu, automatyczną transkrypcję mowy na tekst oraz natychmiastowe przesyłanie zidentyfikowanych słów kluczowych do zewnętrznego serwera. Rozwiązanie zostało zoptymalizowane pod kątem niskich opóźnień i minimalnego obciążenia zasobów sprzętowych.
+Projekt miał na celu realizacje gry inspirowanej na Mario Kart natomiast zamieniając sterowanie na bazujące na wielomodalnościowym podejściu. Zaproponowane przez nas sterowanie opiera się na wizji, dzwięku oraz dotyku. Takie rozwiązanie może zapewnić nadzwyczajne doświadczenia z gry oraz stanowić bazę pod multimodalne interfejsy użytkownika w przyszłości, które dzięki rozwojowi metod analizy danych i sztucznej inteligencji zyskują popularność.
 
-## 🚀 Kluczowe funkcje
-* **Analiza Live:** Przetwarzanie potokowe audio bezpośrednio z urządzenia wejściowego.
-* **Wydajność:** Wykorzystanie silnika `faster-whisper` z kwantyzacją `int8` dla optymalizacji pracy na procesorach (CPU).
-* **Elastyczność:** Możliwość łatwej rekonfiguracji parametrów sieciowych oraz listy słów kluczowych.
-* **Komunikacja Sieciowa:** Integracja z serwerami zewnętrznymi za pomocą gniazd (sockets).
+### Struktura
 
-## 🧩 Wymagania systemowe
-* **Python:** wersja 3.8 lub nowsza.
-* **Biblioteki:** pobranie bibliotek z pliku: requirements.txt
-* **Sprzęt:** Sprawne urządzenie przechwytujące dźwięk (mikrofon).
+Projekt składa się z 2 kluczowych folderów
 
-## ⚙️ Konfiguracja
+- **Unreal_project** w którym znajduje się gra stworzona z pomocą silnika Unreal Engine
+- **Control_scripts** zawierający skrypty w pythonie umożliwiające wielomodalnościowe sterowanie
 
-### 1. Plik konfiguracyjny
-System ładuje parametry sieciowe z pliku `config.json`. Należy upewnić się, co do zgodności konfiguracji z serverem:
+### Komunikacja
 
-```json
-{
-  "host": "127.0.0.1",
-  "port": 65432
-}
+Komunikacja z grą odbywa się za pomocą protokołu udp i jest zdefiniowana w pliku connection_settings.json.
+
+### Modalności
+
+Sterowanie grą składa się z poniższych modalności
+
+- [Wizja](Control_scripts/steering_DG)
+- [Wizja 2](Control_scripts/Camera)
+- [Dzwięk](Control_scripts/Audio)
+- [Dotyk](Control_scripts/Pedal)
+- [Klawiatura(przykład)](Control_scripts/Examples)
+
+### Jak uruchomić wszystkie modalności
+
+Uruchamiaj każdą modalność w osobnym terminalu (z katalogu głównego projektu). Najpierw uruchom Unreal Engine, potem skrypty sterujące.
+
+Przykładowa kolejność:
+
+1. Unreal Engine (`Unreal_project`).
+2. Dotyk (pedal):
+
+```bash
+python Control_scripts/Pedal/Program/komunikacja/comms.py
 ```
 
-### 2. Definicja słów kluczowych
-Słowa kluczowe są obecnie definiowane bezpośrednio w kodzie źródłowym w liście KEYWORDS:
+3. Dzwięk:
 
-```
-KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
-```
-
-##  ▶️ Uruchomienie
-Aby zainicjować proces detekcji, należy wykonać skrypt:
-
-```
-python keyword_detection.py
+```bash
+python Control_scripts/Audio/keyword_detection.py
 ```
 
-## 🧠 Architektura rozwiązania
-* **Ingestia:** Przechwytywanie próbek audio do bufora kołowego.
-* **Segmentacja:** Dzielenie strumienia na interwały czasowe (domyślnie ok. 0.75s).
-* **Inferencja:** Proces transkrypcji realizowany przez model WhisperModel.
-* **Ekstrakcja:** Porównywanie wyników tekstowych ze zdefiniowanym słownikiem.
-* **Transmisja:** Wysyłanie pakietu danych do serwera TCP po wykryciu dopasowania.
+4. Wizja (wybierz jedną wersję):
 
-## ⚠️ Specyfikacja techniczna i optymalizacja
-* **Model:** Domyślnie wykorzystywany jest model tiny.en (zoptymalizowany pod język angielski).
-* **Zasoby:** Inicjalizacja modelu odbywa się domyślnie z parametrem device="cpu" na 8 rdzeniach procesora. Ustawinia te można zmieńć w zależnosci od sprzętu. W przypadku posiadania układu graficznego NVIDIA, można zmienić parametr device na cuda w celu zwiększenia wydajności.
-* **Latencja:** Czas reakcji systemu jest bezpośrednio uzależniony od parametru chunk_duration oraz mocy obliczeniowej jednostki CPU/GPU.
+```bash
+python Control_scripts/steering_DG/steering_w_angles/main_controller.py
+```
 
-## 📄 Autor
-Wojciech "Mezyon" Jankowski
+lub
+
+```bash
+python Control_scripts/steering_DG/steering_w_centroids/main_controller.py
+```
+
+5. Wizja 2 (MediaPipe Hands):
+
+```bash
+python Control_scripts/Camera/camera_module.py
+```
+
+6. Klawiatura (opcjonalnie, przykład):
+
+```bash
+python Control_scripts/Examples/player_1.py
+```
+
+Wszystkie skrypty korzystają z ustawień sieciowych z `connection_settings.json`.
