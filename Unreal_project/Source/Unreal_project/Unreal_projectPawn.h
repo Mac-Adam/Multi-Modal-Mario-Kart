@@ -96,8 +96,20 @@ protected:
 	FTimerHandle FlipCheckTimer;
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Network Controls")
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Racing")
+    bool bCanDrive = false;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Racing")
+    int32 LapsCompleted = 0;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Racing")
+    bool bHitCheckpoint = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Racing")
+    int32 PowerUpCount = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Network Controls")
     int32 UDPPort = 8001;
 
 	AUnreal_projectPawn();
@@ -122,6 +134,12 @@ public:
 	// End Actor interface
 
 protected:
+
+	/** Tracks how long it has been since the last UDP command was received */
+    float TimeSinceLastNetworkInput = 0.0f;
+
+    /** Optimization flag so we only trigger the timeout reset once */
+    bool bIsNetworkTimeout = false;
 
 	/** Handles steering input */
 	void Steering(const FInputActionValue& Value);
