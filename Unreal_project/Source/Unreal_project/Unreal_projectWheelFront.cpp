@@ -7,5 +7,5 @@ UUnreal_projectWheelFront::UUnreal_projectWheelFront()
 {
 	AxleType = EAxleType::Front;
 	bAffectedBySteering = true;
-	MaxSteerAngle = 40.f;
+	MaxSteerAngle = 45.f;
 }

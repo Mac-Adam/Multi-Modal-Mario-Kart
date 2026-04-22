@@ -32,10 +32,10 @@ KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
 # =========================
 # Funkcje Sieciowe
 # =========================
-def send_word(sock, word):
+def send_word(sock, word, host, port):
     """Wysłanie słowa przez socket"""
     try:
-        sock.sendall(word.encode('utf-8'))
+        sock.sendto(f"{word}:0".encode('utf-8'), (host, port))
     except Exception as e:
         print(f"[KD] Błąd wysyłania: {e}")
 
@@ -53,7 +53,7 @@ def recorder():
         while True:
             sd.sleep(1000)
 
-def transcriber(sock):
+def transcriber(sock, host, port):
     """Analizuje audio i wysyła wykryte słowa kluczowe"""
     model_size = "tiny.en"
     print(f"[KD] Ładowanie modelu {model_size}...")
@@ -82,29 +82,18 @@ def transcriber(sock):
                 for keyword in KEYWORDS:
                     if keyword in detected_text:
                         print(f"[KD] Wysłano na server: {detected_text}")
-                        send_word(sock, keyword)
+                        send_word(sock, keyword, host, port)
 
 def main():
     config = load_config()
     host = config.get("host", "127.0.0.1")
     port = config.get("port", 65432)
 
-    # 1. Nawiązanie połączenia i uruchomienie pętli:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host, port))
-            print(f"[KD] Połączono z serwerem {host}:{port}")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print(f"[KD] Połączono z serwerem {host}:{port}")
 
-            # Uruchomienie nagrywania w tle:
-            threading.Thread(target=recorder, daemon=True).start()
-
-            # Uruchomienie transkrypcji (socket jako argument):
-            transcriber(s)
-
-    except ConnectionRefusedError:
-        print(f"[KD] Nie udało się połączyć z serwerem. Upewnij się, że serwer działa.")
-    except KeyboardInterrupt:
-        print(f"[KD] Zamykanie programu...")
+    threading.Thread(target=recorder, daemon=True).start()
+    transcriber(sock, host, port)
 
 if __name__ == "__main__":
     main()

@@ -173,7 +173,7 @@ void AUnreal_projectPawn::Tick(float Delta)
                 if (ReceivedString.Split(TEXT(":"), &Command, &ValueString))
                 {
                     float InputValue = FCString::Atof(*ValueString);
-
+					UE_LOG(LogTemp, Warning, TEXT("Received Command: %s with Value: %f"), *Command, InputValue);
                     if (Command == TEXT("STEER"))
                     {
                         DoSteering(InputValue);
@@ -202,7 +202,15 @@ void AUnreal_projectPawn::Tick(float Delta)
                             DoHandbrakeStop();
                         }
                     }
-                }
+					else if (Command == TEXT("coffee"))
+					{
+						AudioCoffeDetected();
+					}
+					else if (Command == TEXT("chair"))	
+					{
+						AudioChairDetected();
+					}
+				}
             }
         }
     }
