@@ -1,6 +1,6 @@
 # Real-Time Keyword Detection System
 
-Profesjonalne narzędzie do analizy strumienia audio w czasie rzeczywistym, wykorzystujące model **Whisper** do detekcji słów kluczowych i komunikację poprzez protokół **TCP/IP (Sockets)**.
+Profesjonalne narzędzie do analizy strumienia audio w czasie rzeczywistym, wykorzystujące model **Whisper** do detekcji słów kluczowych i komunikację poprzez protokół **UDP**.
 
 ---
 
@@ -34,7 +34,7 @@ System ładuje parametry sieciowe z pliku `config.json`. Należy upewnić się, 
 Słowa kluczowe są obecnie definiowane bezpośrednio w kodzie źródłowym w liście KEYWORDS:
 
 ```
-KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
+KEYWORDS = ['coffee', 'sofa', 'so far', 'so fun', 'so', 'fun']
 ```
 
 ##  ▶️ Uruchomienie

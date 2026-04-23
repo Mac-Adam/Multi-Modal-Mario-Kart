@@ -206,7 +206,7 @@ void AUnreal_projectPawn::Tick(float Delta)
 					{
 						AudioCoffeDetected();
 					}
-					else if (Command == TEXT("chair"))	
+					else if (Command == TEXT("sofa") || Command == TEXT("so far") || Command == TEXT("so fun") || Command == TEXT("so") || Command == TEXT("fun"))	
 					{
 						AudioChairDetected();
 					}

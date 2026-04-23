@@ -27,7 +27,7 @@ frames_per_chunk = int(samplerate * chunk_duration)
 audio_queue = queue.Queue()
 
 # Lista słów, które wyzwalają wysyłkę do serwera:
-KEYWORDS = ['banana', 'bomb', 'chair', 'coffee']
+KEYWORDS = ['coffee', 'sofa', 'so far', 'so fun', 'so', 'fun']
 
 # =========================
 # Funkcje Sieciowe
