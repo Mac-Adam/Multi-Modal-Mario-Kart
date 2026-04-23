@@ -209,6 +209,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void DoResetVehicle();
 
+	UFUNCTION(BlueprintImplementableEvent, Category="Event")
+	void AudioCoffeDetected();
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Event")
+	void AudioChairDetected();
+
 protected:
 
 	/** Called when the brake lights are turned on or off */
