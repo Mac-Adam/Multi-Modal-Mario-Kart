@@ -1,1 +1,0 @@
-Program na esp32 obsługujący mpu6050 i wysyłający dane po serial.

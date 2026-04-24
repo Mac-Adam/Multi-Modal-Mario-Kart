@@ -1,1 +1,0 @@
-Wszystkie otwory na śruby M2

@@ -12,7 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from connection_settings import load_config
 
 config = load_config()
-UDP_IP = config.get("udp_ip", config.get("host", "127.0.0.1"))
+UDP_IP = config.get("udp_ip", config.get("host", "10.128.187.153"))
 UDP_PORT = config.get("udp_port", 8001)
 
 # --- KONFIGURACJA SERIAL ---
@@ -44,7 +44,7 @@ try:
                     print(f"Throttle: {throttle:>6.2f}")
                     
                     # Wysyłka UDP do Unreal Engine
-                    message = f"STEER:{throttle}"
+                    message = f"THROTTLE:{throttle}"
                     sock.sendto(message.encode("utf-8"), (UDP_IP, UDP_PORT))
                     
                 except ValueError:
