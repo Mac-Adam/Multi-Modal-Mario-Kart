@@ -13,7 +13,7 @@ from connection_settings import load_config
 
 # --- KONFIGURACJA ---
 config = load_config()
-UDP_IP = config.get("udp_ip", config.get("host", "127.0.0.1"))
+UDP_IP = config.get("udp_ip", config.get("host", "10.128.187.153"))
 UDP_PORT = config.get("udp_port", 8001)
 LOWER_COLOR = np.array([50, 80, 50])   # Przykładowe dla błękitu
 UPPER_COLOR = np.array([255, 125, 115])

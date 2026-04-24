@@ -1,1 +1,0 @@
-Przykładowe pliki do komunikacji
